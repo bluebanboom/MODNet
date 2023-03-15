@@ -61,6 +61,7 @@ if __name__ == '__main__':
 
         # read image
         im = Image.open(os.path.join(args.input_path, im_name))
+        result_img = im.copy()
 
         # unify image channels to 3
         im = np.asarray(im)
@@ -102,4 +103,8 @@ if __name__ == '__main__':
         matte = F.interpolate(matte, size=(im_h, im_w), mode='area')
         matte = matte[0][0].data.cpu().numpy()
         matte_name = im_name.split('.')[0] + '.png'
-        Image.fromarray(((matte * 255).astype('uint8')), mode='L').save(os.path.join(args.output_path, matte_name))
+        result_name = im_name.split('.')[0] + '_no_bg.png'
+        matte_img = Image.fromarray(((matte * 255).astype('uint8')), mode='L')
+        matte_img.save(os.path.join(args.output_path, matte_name))
+        result_img.putalpha(matte_img)
+        result_img.save(os.path.join(args.output_path, result_name))
