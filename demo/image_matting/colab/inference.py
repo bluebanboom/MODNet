@@ -61,7 +61,6 @@ if __name__ == '__main__':
 
         # read image
         im = Image.open(os.path.join(args.input_path, im_name))
-        result_img = im.copy()
 
         # unify image channels to 3
         im = np.asarray(im)
@@ -71,7 +70,9 @@ if __name__ == '__main__':
             im = np.repeat(im, 3, axis=2)
         elif im.shape[2] == 4:
             im = im[:, :, 0:3]
-
+        
+        foreground = im.copy()
+        
         # convert image to PyTorch tensor
         im = Image.fromarray(im)
         im = im_transform(im)
@@ -106,5 +107,11 @@ if __name__ == '__main__':
         result_name = im_name.split('.')[0] + '_no_bg.png'
         matte_img = Image.fromarray(((matte * 255).astype('uint8')), mode='L')
         matte_img.save(os.path.join(args.output_path, matte_name))
+        background = np.repeat(np.asarray(matte_img)[:, :, None], 3, axis=2) / 255
+        foreground = foreground* background + np.full(foreground.shape, 255) * (1 - background)
+        result_img = Image.fromarray(np.uint8(foreground))
+        result_img.convert('RGBA')
+        result_img.putalpha(matte_img)
+        result_img.save(result_name)
         result_img.putalpha(matte_img)
         result_img.save(os.path.join(args.output_path, result_name))
