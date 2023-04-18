@@ -111,4 +111,4 @@ if __name__ == '__main__':
         matte_img.save(os.path.join(args.output_path, matte_name))
 
         result_img = np.concatenate((im_ori, matte_uint8[:, :, None]), axis=2)
-        result_img.save(os.path.join(args.output_path, result_name))
+        Image.fromarray(result_img).save(os.path.join(args.output_path, result_name))
